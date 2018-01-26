@@ -1,0 +1,5 @@
+name: BSkyBlock-Addon-FAWE
+main: bskyblock.addon.fawe.Fawe
+version: 0.1
+
+authors: [tastybento]
