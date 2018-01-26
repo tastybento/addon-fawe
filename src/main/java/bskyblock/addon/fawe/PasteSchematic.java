@@ -52,7 +52,7 @@ public class PasteSchematic implements Listener {
             addon.saveResource("schematics/harder.schematic", false);
             addon.saveResource("schematics/nether.schematic", false);
         }
-        
+
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -77,37 +77,44 @@ public class PasteSchematic implements Listener {
         Vector position = new Vector(event.getLocation().getBlockX(), event.getLocation().getBlockY(), event.getLocation().getBlockZ());
         boolean allowUndo = false;
         boolean noAir = true;
-        try {
-            if (DEBUG)
-                addon.getLogger().info("DEBUG: Trying to paste");
-            EditSession editSession = ClipboardFormat.SCHEMATIC.load(schematic.get("island")).paste(world, position, allowUndo, !noAir, (Transform) null);
-            editSession.addNotifyTask(new Runnable() {
+        addon.getServer().getScheduler().runTaskAsynchronously(addon.getBSkyBlock(), new Runnable() {
 
-                public void run() {
+            @Override
+            public void run() {
+                try {
                     if (DEBUG)
-                        addon.getLogger().info("DEBUG: Pasting completed!");
-                    // Get the player. They may have logged out so check if they are online
-                    Player player = addon.getServer().getPlayer(event.getPlayerUUID());
-                    if (player != null && player.isOnline()) {
-                        // Teleport player to their island
-                        if (DEBUG)
-                            addon.getLogger().info("DEBUG: teleporting");
-                        addon.getBSkyBlock().getIslands().homeTeleport(player);
-                    }
-                    // Fire exit event
-                    IslandBaseEvent ev = IslandEvent.builder()
-                            .involvedPlayer(player.getUniqueId())
-                            .reason(Reason.CREATED)
-                            .island(event.getIsland())
-                            .location(event.getLocation())
-                            .build();
-                    addon.getServer().getPluginManager().callEvent(ev);
+                        addon.getLogger().info("DEBUG: Trying to paste");
+                    EditSession editSession = ClipboardFormat.SCHEMATIC.load(schematic.get("island")).paste(world, position, allowUndo, !noAir, (Transform) null);
+                    editSession.addNotifyTask(new Runnable() {
 
-                }});
-        } catch (IOException e) {
-            e.printStackTrace();
-            event.setCancelled(false);
-        }
+                        public void run() {
+                            if (DEBUG)
+                                addon.getLogger().info("DEBUG: Pasting completed!");
+                            // Get the player. They may have logged out so check if they are online
+                            Player player = addon.getServer().getPlayer(event.getPlayerUUID());
+                            if (player != null && player.isOnline()) {
+                                // Teleport player to their island
+                                if (DEBUG)
+                                    addon.getLogger().info("DEBUG: teleporting");
+                                addon.getBSkyBlock().getIslands().homeTeleport(player);
+                            }
+                            // Fire exit event
+                            IslandBaseEvent ev = IslandEvent.builder()
+                                    .involvedPlayer(player.getUniqueId())
+                                    .reason(Reason.CREATED)
+                                    .island(event.getIsland())
+                                    .location(event.getLocation())
+                                    .build();
+                            addon.getServer().getPluginManager().callEvent(ev);
+
+                        }});
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    event.setCancelled(false);
+                }
+
+
+            }});
 
 
     }
