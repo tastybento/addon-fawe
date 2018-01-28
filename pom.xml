@@ -10,7 +10,6 @@
 	</properties>
 
 	<build>
-		<sourceDirectory>src</sourceDirectory>
 		<defaultGoal>clean package install</defaultGoal>
 		<resources>
 			<resource>
